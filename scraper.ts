@@ -33,7 +33,7 @@ async function runCrawler() {
       if (!currentUrl || visitedUrls.has(currentUrl)) continue;
 
       console.log(
-        `\n🕷️ Crawling (${visitedUrls.size + 1}/${MAX_PAGES}): ${currentUrl}`
+        `\n🕷️  Crawling (${visitedUrls.size + 1}/${MAX_PAGES}): ${currentUrl}`
       );
 
       try {
@@ -48,6 +48,46 @@ async function runCrawler() {
         // 1. Pobieramy dane
         const title = await page.title();
         const content = await page.evaluate(() => {
+          const selectorsToRemove = [
+            "script",
+            "style",
+            "svg",
+            "noscript",
+            "iframe", // Techniczne
+            "header",
+            "footer",
+            "nav",
+            "aside", // Nawigacja i stopka (zazwyczaj powtarzalny szum)
+            '[id*="cookie"]',
+            '[class*="cookie"]', // Wszystko co ma "cookie" w nazwie klasy/ID
+            '[id*="consent"]',
+            '[class*="consent"]', // Wszystko co ma "consent" (zgody)
+            '[id*="rodo"]',
+            '[class*="rodo"]', // RODO
+            "#CybotCookiebotDialog", // Specyficzne dla Cookiebot (to co Ci wywaliło te #BULK)
+            ".cmplz-cookiebanner", // Inna popularna wtyczka
+          ];
+
+          // 2. Usuwamy fizycznie te elementy z DOM
+          const garbage = document.querySelectorAll(
+            selectorsToRemove.join(", ")
+          );
+          garbage.forEach((el) => el.remove());
+
+          // B. Wstrzykujemy styl "Pokaż Wszystko"
+          // Tworzymy element style
+          const style = document.createElement("style");
+          style.innerHTML = `
+              * { 
+                display: block !important; 
+                visibility: visible !important; 
+                opacity: 1 !important; 
+                height: auto !important; 
+                width: auto !important;
+                max-height: none !important;
+              }
+            `;
+          document.head.appendChild(style);
           // Pobieramy sam tekst, czyścimy entery i tabulatory
           return document.body.innerText.replace(/\s+/g, " ").trim();
         });

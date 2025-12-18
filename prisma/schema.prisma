@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Główna tabela Twojego klienta
+model Project {
+  id          String   @id @default(uuid())
+  domain      String   @unique // "seedpaper.pl"
+  createdAt   DateTime @default(now())
+  
+  // INPUT (To co wchodzi)
+  userContext String?  // To co wklepałeś z palca (backstage)
+  rawContent  String?  // Markdown ze strony (wynik scrapera)
+
+  // OUTPUT AI (Moduły jako JSON - elastyczność)
+  // Moduł 1: Diagnoza (SWOT, Błędy, Analiza konkurencji w kontekście nas)
+  auditData   String?  
+  
+  // Moduł 2: Fundamenty (Persony, UVP, Tone of Voice)
+  strategyData String? 
+  
+  // Moduł 3: Plan (Słowa kluczowe, Content Plan, KPI)
+  roadmapData String?  
+
+  // Relacja: Jeden projekt ma wielu konkurentów
+  competitors Competitor[]
+}
+
+// Prosta tabela dla konkurencji
+model Competitor {
+  id          String  @id @default(uuid())
+  url         String
+  rawContent  String? // Markdown ich strony
+  analysis    String? // Co AI o nich myśli (JSON)
+  
+  projectId   String
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}

@@ -1,133 +1,97 @@
 import { chromium } from "playwright";
-import * as fs from "fs";
 
-// Konfiguracja
-const START_URL = "https://seedpaper.pl";
-const MAX_PAGES = 15; // Limit stron, żeby nie czekać wieki na start
-const OUTPUT_FILE = "site-data.json";
+export async function scrapeToMarkdown(url: string): Promise<string> {
+  console.log(`🕷️ Semantic Scraping: ${url}...`);
 
-interface PageData {
-  url: string;
-  title: string;
-  content: string;
-}
-
-async function runCrawler() {
-  console.log(`🚀 Startujemy crawlera na: ${START_URL}`);
-
-  const browser = await chromium.launch({ headless: false }); // Widzisz co się dzieje
-  const context = await browser.newContext();
-  const page = await context.newPage();
-
-  // Zbiory do zarządzania kolejką
-  const visitedUrls = new Set<string>();
-  const urlsToVisit: string[] = [START_URL];
-  const results: PageData[] = [];
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage();
 
   try {
-    while (urlsToVisit.length > 0 && visitedUrls.size < MAX_PAGES) {
-      // Pobieramy pierwszy link z kolejki
-      const currentUrl = urlsToVisit.shift();
+    await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
 
-      // Jeśli URL jest pusty lub już odwiedzony -> pomiń
-      if (!currentUrl || visitedUrls.has(currentUrl)) continue;
-
-      console.log(
-        `\n🕷️  Crawling (${visitedUrls.size + 1}/${MAX_PAGES}): ${currentUrl}`
+    const markdown = await page.evaluate(() => {
+      // 1. Usuwanie śmieci (tak jak wcześniej, ale agresywniej)
+      const garbage = document.querySelectorAll(
+        'script, style, svg, noscript, iframe, nav, [class*="cookie"], [id*="cookie"], .ads, #sidebar'
       );
+      garbage.forEach((el) => el.remove());
 
-      try {
-        await page.goto(currentUrl, {
-          waitUntil: "networkidle",
-          timeout: 10000,
-        });
+      // 2. Pobieramy meta dane
+      const title = document.title;
+      const description =
+        document
+          .querySelector('meta[name="description"]')
+          ?.getAttribute("content") || "";
 
-        // Czekamy chwilę dla pewności
-        await page.waitForTimeout(1000);
+      // 3. Funkcja rekurencyjna do budowania Markdowna
+      function outputMarkdown(node: Element): string {
+        let text = "";
 
-        // 1. Pobieramy dane
-        const title = await page.title();
-        const content = await page.evaluate(() => {
-          const selectorsToRemove = [
-            "script",
-            "style",
-            "svg",
-            "noscript",
-            "iframe", // Techniczne
-            "header",
-            "footer",
-            "nav",
-            "aside", // Nawigacja i stopka (zazwyczaj powtarzalny szum)
-            '[id*="cookie"]',
-            '[class*="cookie"]', // Wszystko co ma "cookie" w nazwie klasy/ID
-            '[id*="consent"]',
-            '[class*="consent"]', // Wszystko co ma "consent" (zgody)
-            '[id*="rodo"]',
-            '[class*="rodo"]', // RODO
-            "#CybotCookiebotDialog", // Specyficzne dla Cookiebot (to co Ci wywaliło te #BULK)
-            ".cmplz-cookiebanner", // Inna popularna wtyczka
-          ];
+        // Ignorujemy ukryte elementy
+        const style = window.getComputedStyle(node);
+        if (style.display === "none" || style.visibility === "hidden")
+          return "";
 
-          // 2. Usuwamy fizycznie te elementy z DOM
-          const garbage = document.querySelectorAll(
-            selectorsToRemove.join(", ")
-          );
-          garbage.forEach((el) => el.remove());
-
-          // B. Wstrzykujemy styl "Pokaż Wszystko"
-          // Tworzymy element style
-          const style = document.createElement("style");
-          style.innerHTML = `
-              * { 
-                display: block !important; 
-                visibility: visible !important; 
-                opacity: 1 !important; 
-                height: auto !important; 
-                width: auto !important;
-                max-height: none !important;
-              }
-            `;
-          document.head.appendChild(style);
-          // Pobieramy sam tekst, czyścimy entery i tabulatory
-          return document.body.innerText.replace(/\s+/g, " ").trim();
-        });
-
-        // Dodajemy do wyników
-        results.push({ url: currentUrl, title, content });
-        visitedUrls.add(currentUrl);
-
-        // 2. Szukamy nowych linków na tej podstronie
-        const links = await page.evaluate((baseUrl) => {
-          // Pobieramy wszystkie elementy <a>
-          const anchors = Array.from(document.querySelectorAll("a"));
-          console.log(anchors.map((a) => a.href));
-          return anchors
-            .map((a) => (a.href.endsWith("/") ? a.href.slice(0, -1) : a.href)) // Wyciągamy href
-            .filter((href) => href.startsWith(baseUrl)) // Tylko ta sama domena!
-            .filter((href) => !href.includes("#")) // Bez kotwic
-            .filter((href) => !href.match(/\.(pdf|jpg|png|zip)$/i)); // Bez plików
-        }, START_URL);
-
-        // Dodajemy unikalne nowe linki do kolejki
-        for (const link of links) {
-          if (!visitedUrls.has(link) && !urlsToVisit.includes(link)) {
-            urlsToVisit.push(link);
-          }
+        // Przetwarzamy dzieci
+        for (const child of Array.from(node.children)) {
+          text += outputMarkdown(child) + " ";
         }
-      } catch (e) {
-        console.error(`⚠️ Błąd na stronie ${currentUrl}:`, e);
-      }
-    }
 
-    // KONIEC: Zapisujemy wyniki
-    console.log(
-      `\n💾 Zapisuję ${results.length} podstron do pliku ${OUTPUT_FILE}...`
-    );
-    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(results, null, 2));
-    console.log("✅ Gotowe! Sprawdź plik site-data.json");
+        // Jeśli nie ma dzieci, bierzemy tekst (ale tylko jeśli node sam w sobie ma tekst)
+        if (node.children.length === 0) {
+          text = node.textContent?.trim() || "";
+        }
+
+        // Formatowanie na podstawie tagu
+        const tagName = node.tagName.toLowerCase();
+        switch (tagName) {
+          case "h1":
+            return `\n# ${text}\n`;
+          case "h2":
+            return `\n## ${text}\n`;
+          case "h3":
+            return `\n### ${text}\n`;
+          case "p":
+            return `\n${text}\n`;
+          case "li":
+            return ` - ${text}\n`;
+          case "a":
+            return ` [${text}](${node.getAttribute("href")}) `;
+          case "img":
+            return ` ![${node.getAttribute("alt") || "img"}] `;
+          case "div":
+          case "section":
+          case "article":
+          case "main":
+          case "span":
+          case "b":
+          case "strong":
+            return text; // Zwracamy sam tekst bez formatowania
+          default:
+            return text;
+        }
+      }
+
+      // Uruchamiamy na body
+      const bodyContent = outputMarkdown(document.body);
+
+      // Sklejamy całość
+      return `
+Title: ${title}
+Description: ${description}
+URL: ${window.location.href}
+---
+${bodyContent.replace(/\n\s*\n/g, "\n\n").trim()} 
+        `; // Regex usuwa wielokrotne puste linie
+    });
+
+    return markdown;
+  } catch (e) {
+    console.error(`⚠️ Błąd:`, e);
+    return "";
   } finally {
     await browser.close();
   }
 }
 
-runCrawler();
+// scrapeToMarkdown("https://seedpaper.pl").then((res) => console.log(res));

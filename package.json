@@ -1,0 +1,13 @@
+{
+  "name": "marketing-agent",
+  "private": true,
+  "workspaces": [
+    "apps/server",
+    "apps/dashboard"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev --workspace=@app/server",
+    "dev:dash": "npm run dev --workspace=@app/dashboard",
+    "db:push": "npm run db:push --workspace=@app/server"
+  }
+}

@@ -1,25 +1,26 @@
 {
-  "name": "marketing-agent",
+  "name": "@app/server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "scraper": "npx ts-node scraper.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:push": "prisma db push"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "@types/node": "^25.0.3",
-    "prisma": "^6.19.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
-  },
   "dependencies": {
     "@prisma/client": "^6.19.0",
     "dotenv": "^17.2.3",
     "openai": "^6.14.0",
     "playwright": "^1.57.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "prisma": "^6.19.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

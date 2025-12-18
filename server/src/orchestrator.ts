@@ -30,7 +30,7 @@ function cleanMarkdownForAI(markdown: string): string {
 
 // Główny Prompt Systemowy (Definiuje strukturę JSON)
 const MASTER_PROMPT = `
-Jesteś Strategicznym Architektem Marketingu B2B/B2C.
+Jesteś Strategicznym Architektem Marketingu
 Twoim zadaniem jest przeanalizowanie treści strony klienta i kontekstu biznesowego, a następnie wygenerowanie kompleksowej strategii.
 
 Musisz zwrócić wynik w formacie czystego JSON (bez bloków code \`\`\`json).
@@ -125,7 +125,7 @@ async function runOrchestrator() {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // Szybki i tani, idealny do JSONowania danych
+      model: "gpt-5-mini", // Szybki i tani, idealny do JSONowania danych
       response_format: { type: "json_object" }, // Wymusza poprawny JSON
       messages: [
         { role: "system", content: MASTER_PROMPT },

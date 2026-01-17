@@ -1,33 +1,31 @@
-import fs from "fs";
-import OpenAI from "openai";
-import dotenv from "dotenv";
+import fs from 'fs'
+import OpenAI from 'openai'
+import dotenv from 'dotenv'
 
 // Ładujemy zmienne z pliku .env
-dotenv.config();
+dotenv.config()
 
-const INPUT_FILE = "site-data.json";
-const OUTPUT_FILE = "RAPORT_MARKETINGOWY.md";
+const INPUT_FILE = 'site-data.json'
+const OUTPUT_FILE = 'RAPORT_MARKETINGOWY.md'
 
 // Konfiguracja OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-});
+})
 
 async function generateAudit() {
-  console.log("🚀 Uruchamiam Agenta Marketingowego AI...");
+  console.log('🚀 Uruchamiam Agenta Marketingowego AI...')
 
   // 1. Wczytujemy dane ze scrapingu
   if (!fs.existsSync(INPUT_FILE)) {
-    console.error(
-      `❌ Nie znaleziono pliku ${INPUT_FILE}. Najpierw uruchom scraper!`
-    );
-    return;
+    console.error(`❌ Nie znaleziono pliku ${INPUT_FILE}. Najpierw uruchom scraper!`)
+    return
   }
 
-  const rawData = fs.readFileSync(INPUT_FILE, "utf-8");
-  const pages = JSON.parse(rawData);
+  const rawData = fs.readFileSync(INPUT_FILE, 'utf-8')
+  const pages = JSON.parse(rawData)
 
-  console.log(`📊 Wczytano ${pages.length} podstron. Przygotowuję kontekst...`);
+  console.log(`📊 Wczytano ${pages.length} podstron. Przygotowuję kontekst...`)
 
   // 2. Przygotowujemy "wsad" dla AI
   // Łączymy treści z podstron w jeden ciąg, ale ucinamy zbyt długie teksty, żeby nie spalić milionów tokenów
@@ -39,28 +37,28 @@ async function generateAudit() {
     URL: ${p.url}
     TREŚĆ: ${p.content.substring(0, 8000)} ... [ucięto resztę]
     ---
-    `;
+    `
     })
-    .join("\n");
+    .join('\n')
 
   // Limit bezpieczeństwa (np. 50k znaków), żeby nie przekroczyć limitu modelu
   if (contextData.length > 50000) {
-    console.log("⚠️ Kontekst zbyt długi, przycinam do 50k znaków...");
-    contextData = contextData.substring(0, 50000);
+    console.log('⚠️ Kontekst zbyt długi, przycinam do 50k znaków...')
+    contextData = contextData.substring(0, 50000)
   }
   // wklejenie dodatkowych informacji jakie się wie o kliencie - np. poprzez pole tekstowe lub stt
   // Podać przyklad:
   const additionalData =
-    "firma zatrudnia 3 ludzi, pracują przy produkcji papieru w małych kontenerach przy domu właściciela; Zazwyczaj dostają od 1 do 4 zapytań na maila dziennie; właściciel planuje zwiekszyc wydatki na promocje online;";
+    'firma zatrudnia 3 ludzi, pracują przy produkcji papieru w małych kontenerach przy domu właściciela; Zazwyczaj dostają od 1 do 4 zapytań na maila dziennie; właściciel planuje zwiekszyc wydatki na promocje online;'
   // 3. Wysyłamy zapytanie do AI
-  console.log("🧠 Analizuję dane (to może potrwać kilkanaście sekund)...");
+  console.log('🧠 Analizuję dane (to może potrwać kilkanaście sekund)...')
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // Tani i szybki model, idealny do analizy tekstu
+      model: 'gpt-4o-mini', // Tani i szybki model, idealny do analizy tekstu
       messages: [
         {
-          role: "system",
+          role: 'system',
           content: `Jesteś ekspertem marketingu internetowego (SEM/SEO) z 10-letnim doświadczeniem. 
           Twoim zadaniem jest stworzenie profesjonalnego audytu dla klienta na podstawie treści jego strony www.
           
@@ -78,24 +76,24 @@ async function generateAudit() {
           5. POMYSŁY NA CONTENT (5 tematów na bloga/social media, które przyciągną ruch).`,
         },
         {
-          role: "user",
+          role: 'user',
           content: `Oto treść strony klienta:\n${contextData}\noraz dodatkowe dane:${additionalData}`,
         },
       ],
-    });
+    })
 
     // 4. Zapisujemy wynik
-    const reportContent = completion.choices[0].message.content;
+    const reportContent = completion.choices[0].message.content
 
     if (reportContent) {
-      fs.writeFileSync(OUTPUT_FILE, reportContent);
-      console.log(`✅ SUKCES! Raport zapisano w pliku: ${OUTPUT_FILE}`);
+      fs.writeFileSync(OUTPUT_FILE, reportContent)
+      console.log(`✅ SUKCES! Raport zapisano w pliku: ${OUTPUT_FILE}`)
     } else {
-      console.error("❌ AI nie zwróciło treści.");
+      console.error('❌ AI nie zwróciło treści.')
     }
   } catch (error) {
-    console.error("❌ Błąd połączenia z OpenAI:", error);
+    console.error('❌ Błąd połączenia z OpenAI:', error)
   }
 }
 
-generateAudit();
+generateAudit()

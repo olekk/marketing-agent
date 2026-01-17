@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+:root {
+  /* Głęboka czerń z nutą granatu - wygląda bardziej premium niż #000000 */
+  --background: #030014;
+  --foreground: #ffffff;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+  /* Płynne przewijanie */
+  scroll-behavior: smooth;
+}
+
+/* Dodatkowy bajer: Zaznaczanie tekstu na fioletowo */
+::selection {
+  background-color: #7c3aed; /* violet-600 */
+  color: white;
+}

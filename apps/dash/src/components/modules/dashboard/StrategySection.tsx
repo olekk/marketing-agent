@@ -1,9 +1,9 @@
-import React from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface StrategySectionProps {
-  strategy: any
+  strategy: any;
 }
 
 export const StrategySection = ({ strategy }: StrategySectionProps) => {
@@ -21,7 +21,7 @@ export const StrategySection = ({ strategy }: StrategySectionProps) => {
               Archetyp Marki
             </span>
             <span className="text-xl font-bold text-white">
-              {strategy?.brandArchetype || 'Brak danych'}
+              {strategy?.brandArchetype || "Brak danych"}
             </span>
           </div>
           <div className="text-3xl">🎭</div>
@@ -43,11 +43,11 @@ export const StrategySection = ({ strategy }: StrategySectionProps) => {
               <div className="space-y-2 mt-3">
                 <p className="text-xs text-gray-400">
                   <strong className="text-gray-500 block mb-0.5">CEL:</strong>
-                  {persona.goals?.[0] || 'Nieznany'}
+                  {persona.goals?.[0] || "Nieznany"}
                 </p>
                 <p className="text-xs text-gray-400">
                   <strong className="text-gray-500 block mb-0.5">BÓL:</strong>
-                  {persona.painPoints?.[0] || 'Nieznany'}
+                  {persona.painPoints?.[0] || "Nieznany"}
                 </p>
               </div>
             </CardContent>
@@ -55,5 +55,5 @@ export const StrategySection = ({ strategy }: StrategySectionProps) => {
         ))}
       </div>
     </div>
-  )
-}
+  );
+};

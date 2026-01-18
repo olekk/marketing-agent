@@ -1,42 +1,36 @@
-import { prisma } from '@/lib/prisma'
-import { redirect } from 'next/navigation'
-import { DashboardContent } from '@/components/modules/dashboard/DashboardContent'
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+import { DashboardContent } from "@/components/modules/dashboard/DashboardContent";
+import { AuditSchema, StrategySchema, RoadmapSchema } from "@/lib/schemas";
+import { safeParseJSON } from "@/lib/utils";
 
-// Wymuszamy, żeby strona zawsze pobierała świeże dane
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-export default async function DashboardPage({ params }: { params: { id: string } }) {
-  // 1. DATA FETCHING
-  // Pobieramy najnowszy projekt.
+export default async function DashboardPage({
+  params,
+}: {
+  params: { id: string }; // id bedzie uzywane ponizej do fetchowania konkretnego projektu
+}) {
   const project = await prisma.project.findFirst({
-    orderBy: { createdAt: 'desc' },
-  })
+    where: { id: params.id },
+  });
 
-  // 2. LOGIKA PRZEKIEROWANIA (Fallback)
-  // Jeśli baza jest pusta, wyrzucamy użytkownika na stronę główną (Landing Page)
   if (!project) {
-    redirect('/')
+    redirect("/");
   }
 
-  // 3. DATA PARSING
-  const parseData = (jsonString: string | null) => {
-    if (!jsonString) return null
-    try {
-      return JSON.parse(jsonString)
-    } catch (e) {
-      return null
-    }
-  }
+  // Użycie generycznego parsera z konkretnym schematem
+  const audit = safeParseJSON(AuditSchema, project.auditData);
+  const strategy = safeParseJSON(StrategySchema, project.strategyData);
+  const roadmap = safeParseJSON(RoadmapSchema, project.roadmapData);
 
-  const audit = parseData(project.auditData)
-  const strategy = parseData(project.strategyData)
-  const roadmap = parseData(project.roadmapData)
-
-  // Symulacja wyniku (Health Score)
+  // Symulacja wyniku
   const score =
-    (audit ? 30 : 0) + (strategy ? 40 : 0) + (roadmap ? 25 : 0) + Math.floor(Math.random() * 5)
+    (audit.summary !== "Analiza w toku..." ? 30 : 0) +
+    (strategy.uvp !== "Brak zdefiniowanego UVP" ? 40 : 0) +
+    (roadmap.keywords.length > 0 ? 25 : 0) +
+    Math.floor(Math.random() * 5);
 
-  // 4. RENDER UI
   return (
     <DashboardContent
       project={project}
@@ -45,5 +39,5 @@ export default async function DashboardPage({ params }: { params: { id: string }
       roadmap={roadmap}
       score={score}
     />
-  )
+  );
 }

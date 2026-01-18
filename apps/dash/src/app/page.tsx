@@ -1,46 +1,46 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { LoadingScreen } from "@/components/modules/LoadingScreen";
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { LoadingScreen } from '@/components/modules/LoadingScreen'
 
 export default function LandingPage() {
-  const router = useRouter();
-  const [url, setUrl] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter()
+  const [url, setUrl] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   // Funkcja naprawiająca URL (dodaje https://)
   const ensureHttps = (inputUrl: string) => {
-    let cleanUrl = inputUrl.trim();
+    let cleanUrl = inputUrl.trim()
     if (!cleanUrl.match(/^https?:\/\//)) {
-      cleanUrl = `https://${cleanUrl}`;
+      cleanUrl = `https://${cleanUrl}`
     }
-    return cleanUrl;
-  };
+    return cleanUrl
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!url) return;
+    e.preventDefault()
+    if (!url) return
 
     // 1. Napraw adres wizualnie i logicznie
-    const validUrl = ensureHttps(url);
-    setUrl(validUrl);
+    const validUrl = ensureHttps(url)
+    setUrl(validUrl)
 
     // 2. Odpal loading (Przełączamy widok na komponent LoadingScreen)
-    setIsLoading(true);
-  };
+    setIsLoading(true)
+  }
 
   // Callback: Co robimy, gdy loading dojdzie do 100%
   const handleLoadingFinished = () => {
     // Tutaj normalnie byłby wynik z backendu, na razie przekierowujemy na demo
-    router.push("/dashboard/demo");
-  };
+    router.push('/dashboard/demo')
+  }
 
   // --- WIDOK ---
 
   // Jeśli trwa ładowanie, pokazujemy tylko komponent LoadingScreen
   if (isLoading) {
-    return <LoadingScreen onFinished={handleLoadingFinished} />;
+    return <LoadingScreen onFinished={handleLoadingFinished} />
   }
 
   return (
@@ -65,19 +65,14 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            Twój osobisty{" "}
-            <span className="text-white font-semibold">AI Marketing Agent</span>
-            . Wpisz adres strony, a my prześwietlimy konkurencję i zbudujemy
-            plan działania.
+            Twój osobisty <span className="text-white font-semibold">AI Marketing Agent</span>.
+            Wpisz adres strony, a my prześwietlimy konkurencję i zbudujemy plan działania.
           </p>
         </div>
 
         {/* INPUT FORM */}
         {/* INPUT FORM (Mobile First) */}
-        <form
-          onSubmit={handleSubmit}
-          className="relative max-w-xl mx-auto group w-full"
-        >
+        <form onSubmit={handleSubmit} className="relative max-w-xl mx-auto group w-full">
           {/* Poświata */}
           <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-xl blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
 
@@ -142,16 +137,16 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 border-t border-white/5">
           {[
             {
-              title: "Deep Audit",
-              desc: "Techniczna analiza strony",
-              icon: "🔍",
+              title: 'Deep Audit',
+              desc: 'Techniczna analiza strony',
+              icon: '🔍',
             },
             {
-              title: "Spy Competitors",
-              desc: "Podgląd strategii rywali",
-              icon: "🕵️‍♂️",
+              title: 'Spy Competitors',
+              desc: 'Podgląd strategii rywali',
+              icon: '🕵️‍♂️',
             },
-            { title: "Action Plan", desc: "Gotowa lista zadań", icon: "🚀" },
+            { title: 'Action Plan', desc: 'Gotowa lista zadań', icon: '🚀' },
           ].map((item, i) => (
             <div
               key={i}
@@ -165,5 +160,5 @@ export default function LandingPage() {
         </div>
       </div>
     </main>
-  );
+  )
 }

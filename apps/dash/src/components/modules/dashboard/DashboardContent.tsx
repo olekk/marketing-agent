@@ -1,4 +1,3 @@
-import React from 'react'
 import { DashboardHeader } from './DashboardHeader'
 import { HealthScoreSection } from './HealthScoreSection'
 import { AuditSection } from './AuditSection'

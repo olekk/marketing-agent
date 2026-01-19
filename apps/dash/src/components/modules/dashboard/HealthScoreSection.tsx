@@ -1,4 +1,3 @@
-import React from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 
 interface HealthScoreSectionProps {
@@ -37,7 +36,7 @@ export const HealthScoreSection = ({ score, uvp }: HealthScoreSectionProps) => {
             Unikalna Wartość (UVP)
           </p>
           <p className="text-lg md:text-xl text-white font-medium leading-relaxed italic">
-            "{uvp || 'Analiza w toku...'}"
+          &quot;{uvp || 'Analiza w toku...'}&quot;
           </p>
         </CardContent>
       </Card>

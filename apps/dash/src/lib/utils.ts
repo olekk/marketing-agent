@@ -22,3 +22,9 @@ export function safeParseJSON<T>(
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+export const toKey = (text: string) => text
+  .normalize('NFD')                // 1. Rozbija znaki (np. "ą" zamienia na "a" + osobny ogonek)
+  .replace(/[\u0300-\u036f]/g, '') // 2. Usuwa te oddzielone ogonki (diakrytyki)
+  .replace(/\s+/g, '_')            // 3. Zamienia spacje na podłogi (lub usuwa: replace(/\s+/g, ''))
+  .toLowerCase()                   // 4. (Opcjonalnie) Zmniejsza litery

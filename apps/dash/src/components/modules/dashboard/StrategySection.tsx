@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { type StrategyData, type PersonaData } from "@/lib/schemas";
+import { type StrategyData } from "@/lib/schemas";
+import { toKey } from "@/lib/utils";
 
 interface StrategySectionProps {
   strategy: StrategyData;
@@ -33,8 +34,8 @@ export const StrategySection = ({ strategy }: StrategySectionProps) => {
         <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">
           Docelowi Klienci
         </p>
-        {strategy?.personas?.map((persona: PersonaData, i: number) => (
-          <Card key={i} className="bg-[#0a0a0b] hover:bg-white/5">
+        {strategy?.personas?.map((persona, i) => (
+          <Card key={toKey(persona.name)} className="bg-[#0a0a0b] hover:bg-white/5">
             <CardContent className="pt-4 pb-4">
               <div className="flex justify-between items-start mb-2">
                 <h4 className="font-bold text-violet-300">{persona.name}</h4>

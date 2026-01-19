@@ -28,7 +28,7 @@ export const PersonaSchema = z.object({
 });
 
 export const StrategySchema = z.object({
-  uvp: z.string().nullable().optional().default("Brak zdefiniowanego UVP"),
+  uvp: z.string().optional().default("Brak zdefiniowanego UVP"),
   brandArchetype: z.string().nullable().optional().default("Nieokreślony"),
   personas: z.array(PersonaSchema).default([]),
 });

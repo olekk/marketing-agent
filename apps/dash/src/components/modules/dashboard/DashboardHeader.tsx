@@ -1,9 +1,8 @@
-import React from 'react'
 import { Badge } from '@/components/ui/badge'
 
 interface DashboardHeaderProps {
   domain: string
-  reportId: number
+  reportId: string
   createdAt: Date
 }
 

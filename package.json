@@ -21,5 +21,14 @@
   "dependencies": {
     "clsx": "^2.1.1",
     "tailwind-merge": "^3.4.0"
+  },
+  "lint-staged": {
+    "apps/dash/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "apps/dash/**/*.{json,css,md}": [
+      "prettier --write"
+    ]
   }
 }

@@ -33,7 +33,7 @@ export default function LandingPage() {
   // Callback: Co robimy, gdy loading dojdzie do 100%
   const handleLoadingFinished = () => {
     // Tutaj normalnie byłby wynik z backendu, na razie przekierowujemy na demo
-    router.push('/dashboard/demo')
+    router.push('/dashboard/loading')
   }
 
   // --- WIDOK ---

@@ -1,8 +1,9 @@
 import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { type AuditData } from '@/lib/schemas'
 
 interface AuditSectionProps {
-  audit: any
+  audit: AuditData
 }
 
 export const AuditSection = ({ audit }: AuditSectionProps) => {

@@ -1,9 +1,10 @@
 import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { type RoadmapData } from '@/lib/schemas'
 
 interface RoadmapSectionProps {
-  roadmap: any
+  roadmap: RoadmapData
 }
 
 export const RoadmapSection = ({ roadmap }: RoadmapSectionProps) => {

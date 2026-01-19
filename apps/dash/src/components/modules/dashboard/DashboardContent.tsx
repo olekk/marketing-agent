@@ -4,12 +4,14 @@ import { HealthScoreSection } from './HealthScoreSection'
 import { AuditSection } from './AuditSection'
 import { StrategySection } from './StrategySection'
 import { RoadmapSection } from './RoadmapSection'
+import { type Project } from '@prisma/client'
+import { type AuditData, type StrategyData, type RoadmapData } from '@/lib/schemas'
 
 interface DashboardContentProps {
-  project: any
-  audit: any
-  strategy: any
-  roadmap: any
+  project: Project
+  audit: AuditData
+  strategy: StrategyData
+  roadmap: RoadmapData
   score: number
 }
 

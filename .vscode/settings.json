@@ -1,3 +1,17 @@
 {
-  "prisma.pinToPrisma6": true
+  "prisma.pinToPrisma6": true,
+  "eslint.workingDirectories": [
+    "./apps/dash",
+    "./apps/server"
+  ],
+  "eslint.experimental.useFlatConfig": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ]
 }

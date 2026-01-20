@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import fs from 'fs'
 import path from 'path'
 import { scrapeToMarkdown } from './tools/scraper'
+import { resolveProtocol } from './lib/utils'
 
 // Konfiguracja
 dotenv.config()
@@ -76,12 +77,16 @@ Oczekiwana struktura JSON:
 async function runOrchestrator() {
   console.log('🚀 SYSTEM START: Orchestrator v2 (Prisma + AI)')
 
+  // 0. Znormalizuj URL (rozwiąż protokół)
+  const normalizedUrl = await resolveProtocol(CLIENT_URL)
+  console.log(`🔗 Znormalizowany URL: ${normalizedUrl}`)
+
   // 1. Pobierz lub utwórz projekt w bazie
   // Używamy upsert, żeby nie wywaliło błędu jak projekt już istnieje
   // Ale uwaga: przy 'create' musimy mieć dane, więc najpierw sprawdźmy czy jest
 
   let project = await prisma.project.findUnique({
-    where: { domain: CLIENT_URL },
+    where: { domain: normalizedUrl },
   })
 
   let rawContent = project?.rawContent || ''
@@ -89,7 +94,7 @@ async function runOrchestrator() {
   // 2. Jeśli nie ma treści w bazie -> SCRAPING
   if (!project || !project.rawContent) {
     console.log('🕷️ Brak danych w bazie. Uruchamiam Scrapera...')
-    rawContent = await scrapeToMarkdown(CLIENT_URL)
+    rawContent = await scrapeToMarkdown(normalizedUrl)
 
     // Pobierz kontekst usera (jeśli istnieje)
     let userContext = ''
@@ -100,10 +105,10 @@ async function runOrchestrator() {
 
     // Zapisz/Zaktualizuj w bazie
     project = await prisma.project.upsert({
-      where: { domain: CLIENT_URL },
+      where: { domain: normalizedUrl },
       update: { rawContent, userContext }, // Jeśli jest, a pusty content -> update
       create: {
-        domain: CLIENT_URL,
+        domain: normalizedUrl,
         rawContent,
         userContext,
       },

@@ -12,7 +12,7 @@ export default async function DashboardPage({
   params: { id: string }; // id bedzie uzywane ponizej do fetchowania konkretnego projektu
 }) {
   const project = await prisma.project.findFirst({
-    where: { id: params.id },
+    where: { id: params.id }, // skad znac id przed zapytaniem do ai? moze narzucac z landingu
   });
 
   if (!project) {

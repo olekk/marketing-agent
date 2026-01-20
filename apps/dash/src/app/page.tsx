@@ -9,31 +9,18 @@ export default function LandingPage() {
   const [url, setUrl] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  // Funkcja naprawiająca URL (dodaje https://)
-  const ensureHttps = (inputUrl: string) => {
-    let cleanUrl = inputUrl.trim()
-    if (!cleanUrl.match(/^https?:\/\//)) {
-      cleanUrl = `https://${cleanUrl}`
-    }
-    return cleanUrl
-  }
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!url) return
 
-    // 1. Napraw adres wizualnie i logicznie
-    const validUrl = ensureHttps(url)
-    setUrl(validUrl)
-
-    // 2. Odpal loading (Przełączamy widok na komponent LoadingScreen)
+    // Odpal loading (Przełączamy widok na komponent LoadingScreen)
     setIsLoading(true)
   }
 
   // Callback: Co robimy, gdy loading dojdzie do 100%
   const handleLoadingFinished = () => {
     // Tutaj normalnie byłby wynik z backendu, na razie przekierowujemy na demo
-    router.push('/dashboard/loading')
+    router.push(`/dashboard/${url}`)
   }
 
   // --- WIDOK ---
@@ -129,7 +116,7 @@ export default function LandingPage() {
           </div>
 
           <p className="text-xs text-gray-500 mt-3 text-center px-4">
-            * Automatycznie dodamy https:// jeśli zapomnisz.
+            * Wpisz domenę (np. twoja-firma.pl) - protokół zostanie wykryty automatycznie.
           </p>
         </form>
 

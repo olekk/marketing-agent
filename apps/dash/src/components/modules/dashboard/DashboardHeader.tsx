@@ -23,13 +23,12 @@ export const DashboardHeader = ({ domain, reportId, createdAt }: DashboardHeader
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="hidden md:flex flex-col text-right">
+          <div className="md:flex flex-col text-right">
             <span className="text-[10px] uppercase text-gray-500 tracking-wider">
-              Ostatnia aktualizacja
+              Ostatnia aktualizacja: &nbsp;
             </span>
             <span className="text-xs font-mono text-gray-300">
-              {new Date(createdAt).toLocaleDateString()}
-            </span>
+            {new Date(createdAt).toLocaleDateString('en-GB', { dateStyle: 'medium' })}            </span>
           </div>
           <Badge variant="success">ONLINE</Badge>
         </div>

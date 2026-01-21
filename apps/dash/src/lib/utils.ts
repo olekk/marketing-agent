@@ -28,3 +28,14 @@ export const toKey = (text: string) => text
   .replace(/[\u0300-\u036f]/g, '') // 2. Usuwa te oddzielone ogonki (diakrytyki)
   .replace(/\s+/g, '_')            // 3. Zamienia spacje na podłogi (lub usuwa: replace(/\s+/g, ''))
   .toLowerCase()                   // 4. (Opcjonalnie) Zmniejsza litery
+
+  export const toDomainId = (input: string) => {
+    if (!input) return ''
+    const trimmed = input.trim().toLowerCase()
+  
+    const withoutProtocol = trimmed.replace(/^https?:\/\//i, '')
+    const withoutPath = withoutProtocol.split('/')[0] ?? ''
+    const withoutQuery = withoutPath.split('?')[0] ?? ''
+    const withoutPort = withoutQuery.split(':')[0] ?? ''
+    return withoutPort.replace(/^www\./, '')
+  }

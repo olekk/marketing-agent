@@ -8,7 +8,7 @@
   "scripts": {
     "dev:server": "npm run dev --workspace=@app/server",
     "dev:dash": "npm run dev --workspace=@app/dash",
-    "db:push": "npm run db:push --workspace=@app/server",
+    "db:sync": "npm run db:push --workspace=@app/server && npm run db:sync --workspace=@app/dash",
     "lint": "npm run lint --workspace=@app/dash"
   },
   "devDependencies": {

@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
 import { DashboardContent } from "@/components/modules/dashboard/DashboardContent";
 import { AuditSchema, StrategySchema, RoadmapSchema } from "@/lib/schemas";
 import { safeParseJSON } from "@/lib/utils";
@@ -9,14 +8,15 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage({
   params,
 }: {
-  params: { id: string }; // id bedzie uzywane ponizej do fetchowania konkretnego projektu
+  params: Promise<{ domain: string }>; // id bedzie uzywane ponizej do fetchowania konkretnego projektu
 }) {
-  const project = await prisma.project.findFirst({
-    where: { id: params.id }, // skad znac id przed zapytaniem do ai? moze narzucac z landingu
+  const { domain } = await params
+  const project = await prisma.project.findUnique({
+    where: { domain:domain },
   });
 
   if (!project) {
-    redirect("/");
+    return <div>Project not found</div>;
   }
 
   // Użycie generycznego parsera z konkretnym schematem

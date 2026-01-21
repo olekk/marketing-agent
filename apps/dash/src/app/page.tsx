@@ -2,33 +2,20 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { LoadingScreen } from '@/components/modules/LoadingScreen'
+import { toDomainId } from '@/lib/utils'
 
 export default function LandingPage() {
   const router = useRouter()
   const [url, setUrl] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!url) return
 
+    router.push(`/dashboard/${toDomainId(url)}`)
     // Odpal loading (Przełączamy widok na komponent LoadingScreen)
-    setIsLoading(true)
   }
 
-  // Callback: Co robimy, gdy loading dojdzie do 100%
-  const handleLoadingFinished = () => {
-    // Tutaj normalnie byłby wynik z backendu, na razie przekierowujemy na demo
-    router.push(`/dashboard/${url}`)
-  }
-
-  // --- WIDOK ---
-
-  // Jeśli trwa ładowanie, pokazujemy tylko komponent LoadingScreen
-  if (isLoading) {
-    return <LoadingScreen onFinished={handleLoadingFinished} />
-  }
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-[#030014] text-white relative overflow-hidden selection:bg-violet-500/30">
@@ -46,7 +33,7 @@ export default function LandingPage() {
 
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white leading-tight">
             Zrozum rynek <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-400 to-white animate-gradient">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-violet-400 via-fuchsia-400 to-white animate-gradient">
               zanim wydasz złotówkę.
             </span>
           </h1>
@@ -61,7 +48,7 @@ export default function LandingPage() {
         {/* INPUT FORM (Mobile First) */}
         <form onSubmit={handleSubmit} className="relative max-w-xl mx-auto group w-full">
           {/* Poświata */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-xl blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
+          <div className="absolute -inset-1 bg-linear-to-r from-violet-600 to-fuchsia-600 rounded-xl blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
 
           <div className="relative flex flex-col md:flex-row items-stretch md:items-center bg-[#0a0a0b] border border-white/10 rounded-xl p-2 shadow-2xl gap-2 md:gap-0">
             {/* Ikona (Tylko na desktop, na mobile ukrywamy dla oszczędności miejsca lub zostawiamy) */}

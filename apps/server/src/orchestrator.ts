@@ -4,15 +4,14 @@ import dotenv from 'dotenv'
 import fs from 'fs'
 import path from 'path'
 import { scrapeToMarkdown } from './tools/scraper'
-import { resolveProtocol } from './lib/utils'
+import { resolveProtocol, cleanDomain } from './lib/utils'
 
 // Konfiguracja
 dotenv.config()
 const prisma = new PrismaClient()
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-const CLIENT_URL = 'https://seedpaper.pl' // Twój cel
-const CONTEXT_FILE = path.join(__dirname, '../inputs/context.txt')
+// const CONTEXT_FILE = path.join(__dirname, '../inputs/context.txt')
 
 // --- HELPERY ---
 
@@ -74,19 +73,19 @@ Oczekiwana struktura JSON:
 }
 `
 
-async function runOrchestrator() {
+export async function runOrchestrator(clientUrl: string) {
   console.log('🚀 SYSTEM START: Orchestrator v2 (Prisma + AI)')
+  console.log(`📍 URL klienta: ${clientUrl}`)
 
-  // 0. Znormalizuj URL (rozwiąż protokół)
-  const normalizedUrl = await resolveProtocol(CLIENT_URL)
-  console.log(`🔗 Znormalizowany URL: ${normalizedUrl}`)
+  // 0. Przygotuj domenę i URL
+  const domain = cleanDomain(clientUrl) // Czysta domena do zapisu w bazie
+  const normalizedUrl = await resolveProtocol(clientUrl) // Pełny URL do scrapowania
+  console.log(`🔗 Domena (baza): ${domain}`)
+  console.log(`🔗 URL (scraping): ${normalizedUrl}`)
 
   // 1. Pobierz lub utwórz projekt w bazie
-  // Używamy upsert, żeby nie wywaliło błędu jak projekt już istnieje
-  // Ale uwaga: przy 'create' musimy mieć dane, więc najpierw sprawdźmy czy jest
-
   let project = await prisma.project.findUnique({
-    where: { domain: normalizedUrl },
+    where: { domain },
   })
 
   let rawContent = project?.rawContent || ''
@@ -98,17 +97,17 @@ async function runOrchestrator() {
 
     // Pobierz kontekst usera (jeśli istnieje)
     let userContext = ''
-    if (fs.existsSync(CONTEXT_FILE)) {
-      userContext = fs.readFileSync(CONTEXT_FILE, 'utf-8')
-      console.log('📝 Wczytano kontekst użytkownika.')
-    }
+    // if (fs.existsSync(CONTEXT_FILE)) {
+    //   userContext = fs.readFileSync(CONTEXT_FILE, 'utf-8')
+    //   console.log('📝 Wczytano kontekst użytkownika.')
+    // }
 
     // Zapisz/Zaktualizuj w bazie
     project = await prisma.project.upsert({
-      where: { domain: normalizedUrl },
+      where: { domain },
       update: { rawContent, userContext }, // Jeśli jest, a pusty content -> update
       create: {
-        domain: normalizedUrl,
+        domain,
         rawContent,
         userContext,
       },
@@ -165,9 +164,10 @@ async function runOrchestrator() {
     console.log('🔍 Podgląd Strategii (UVP):', result.strategy.uvp)
     console.log('🔍 Podgląd Person:', result.strategy.personas.length)
     console.log('🔍 Podgląd Słów Kluczowych:', result.roadmap.keywords.slice(0, 3))
+    
+    return { success: true, projectId: project.id, domain }
   } catch (error) {
     console.error('❌ Błąd krytyczny AI:', error)
+    throw error
   }
 }
-
-runOrchestrator()

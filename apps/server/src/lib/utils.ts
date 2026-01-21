@@ -1,7 +1,7 @@
 /**
  * Wyczyść domenę z protokołu i końcowych ukośników
  */
-function cleanDomain(domain: string): string {
+export function cleanDomain(domain: string): string {
   return domain
     .trim()
     .replace(/^https?:\/\//i, '') // Usuń http:// lub https://

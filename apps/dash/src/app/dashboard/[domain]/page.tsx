@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { DashboardContent } from "@/components/modules/dashboard/DashboardContent";
 import { AuditSchema, StrategySchema, RoadmapSchema } from "@/lib/schemas";
 import { safeParseJSON } from "@/lib/utils";
+import { AnalysisTrigger } from "@/components/modules/AnalysisTrigger";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export default async function DashboardPage({
   });
 
   if (!project) {
-    return <div>Project not found</div>;
+    return <AnalysisTrigger domain={domain} />;
   }
 
   // Użycie generycznego parsera z konkretnym schematem

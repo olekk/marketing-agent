@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/playwright:v1.57.0-jammy
 WORKDIR /app
 
 # 1. Kopiujemy pliki konfiguracyjne z głównego katalogu
-COPY package.json package-lock.json tsconfig.json ./
+COPY package.json package-lock.json ./
 
 # 2. Kopiujemy package.json serwera, zachowując strukturę katalogów
 COPY apps/server/package.json apps/server/package.json

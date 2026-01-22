@@ -62,7 +62,6 @@ export const AnalysisTrigger = ({ domain }: { domain: string }) => {
         }
 
       } catch (error) {
-        console.error('Błąd komunikacji z serwerem:', error)
         const message =
           error instanceof Error
             ? error.message

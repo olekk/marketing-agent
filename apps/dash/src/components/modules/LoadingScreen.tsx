@@ -73,6 +73,7 @@ export function LoadingScreen({ isFinished, onAnimationComplete }: LoadingScreen
       }, 200)
       return () => clearTimeout(timeout)
     }
+    return undefined
   }, [progress, onAnimationComplete])
 
   return (

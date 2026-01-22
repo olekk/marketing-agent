@@ -13,10 +13,11 @@ const LOADING_MESSAGES = [
 ]
 
 interface LoadingScreenProps {
-  onFinished: () => void // Funkcja, którą wywołamy, gdy pasek dojdzie do końca
+  isFinished: boolean // Nowy prop: Czy serwer już odpowiedział?
+  onAnimationComplete: () => void // Wywołamy to DOPIERO jak pasek dojdzie do 100%
 }
 
-export function LoadingScreen({ onFinished }: LoadingScreenProps) {
+export function LoadingScreen({ isFinished, onAnimationComplete }: LoadingScreenProps) {
   const [progress, setProgress] = useState(0)
   const [messageIndex, setMessageIndex] = useState(0)
 
@@ -24,23 +25,33 @@ export function LoadingScreen({ onFinished }: LoadingScreenProps) {
     // 1. Logika paska postępu
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(progressInterval)
-          return 100
+        // SCENARIUSZ A: Serwer odpowiedział (isFinished = true)
+        if (isFinished) {
+          // Jeśli już mamy 100%, czyścimy i kończymy
+          if (prev >= 100) {
+            clearInterval(progressInterval)
+            return 100
+          }
+          // Bardzo szybkie dobijanie do 100% (np. +5 na klatkę)
+          return prev + 5
         }
-        // Zwalniamy przy końcu (symulacja trudnych obliczeń)
-        const jump = Math.max(0.5, (95 - prev) / 15)
-        const newValue = prev + jump
 
-        // Jeśli dobiło do setki (lub prawie), wywołaj callback
-        if (newValue >= 99) {
-          // Małe opóźnienie, żeby user zobaczył 100%
-          setTimeout(onFinished, 500)
-          return 100
+        // SCENARIUSZ B: Czekamy na serwer (isFinished = false)
+        
+        // Jeśli jesteśmy na 80%, zatrzymujemy się i czekamy
+        if (prev >= 80) {
+          return 80
         }
-        return newValue
+
+        // Faza 1: 0% -> 20% (Wolno - budowanie napięcia)
+        if (prev < 20) {
+          return prev + 0.2
+        }
+
+        // Faza 2: 20% -> 80% (Szybko - symulacja pracy)
+        return prev + 1.5
       })
-    }, 100)
+    }, 50) // Częstsze odświeżanie dla płynności
 
     // 2. Logika zmiany tekstów
     const messageInterval = setInterval(() => {
@@ -51,7 +62,18 @@ export function LoadingScreen({ onFinished }: LoadingScreenProps) {
       clearInterval(progressInterval)
       clearInterval(messageInterval)
     }
-  }, [onFinished])
+  }, [isFinished])
+
+  // Obserwator: Wywołaj callback tylko gdy fizycznie dobijemy do 100%
+  useEffect(() => {
+    if (progress >= 100) {
+      // Małe opóźnienie, żeby user nacieszył oko "setką"
+      const timeout = setTimeout(() => {
+        onAnimationComplete()
+      }, 200)
+      return () => clearTimeout(timeout)
+    }
+  }, [progress, onAnimationComplete])
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#030014] text-white overflow-hidden">
@@ -64,7 +86,7 @@ export function LoadingScreen({ onFinished }: LoadingScreenProps) {
         <div className="relative w-32 h-32 mx-auto">
           <div className="absolute inset-0 border-2 border-violet-500/30 rounded-full animate-ping"></div>
           <div className="absolute inset-0 border-2 border-violet-500 rounded-full shadow-[0_0_15px_rgba(139,92,246,0.5)] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <span className="text-2xl font-mono font-bold text-white">{Math.round(progress)}%</span>
+            <span className="text-2xl font-mono font-bold text-white">{Math.min(100, Math.round(progress))}%</span>
           </div>
           <div className="absolute inset-0 border-t-2 border-fuchsia-500 rounded-full animate-spin"></div>
         </div>
@@ -74,6 +96,7 @@ export function LoadingScreen({ onFinished }: LoadingScreenProps) {
           <h2 className="text-xl font-mono text-violet-200">
             <span className="animate-pulse"> {LOADING_MESSAGES[messageIndex]}</span>
           </h2>
+          {/* Kropki */}
           <div className="flex justify-center gap-2">
             <span className="w-2 h-2 bg-violet-500 rounded-full animate-bounce delay-75"></span>
             <span className="w-2 h-2 bg-violet-500 rounded-full animate-bounce delay-150"></span>
@@ -84,7 +107,7 @@ export function LoadingScreen({ onFinished }: LoadingScreenProps) {
         {/* Pasek Postępu */}
         <div className="w-full bg-gray-800/50 border border-white/10 rounded-full h-1 overflow-hidden">
           <div
-            className="bg-linear-to-r from-violet-600 to-fuchsia-600 h-full transition-all duration-300 ease-out shadow-[0_0_10px_#8b5cf6]"
+            className="bg-linear-to-r from-violet-600 to-fuchsia-600 h-full transition-all duration-75 ease-linear shadow-[0_0_10px_#8b5cf6]"
             style={{ width: `${progress}%` }}
           ></div>
         </div>

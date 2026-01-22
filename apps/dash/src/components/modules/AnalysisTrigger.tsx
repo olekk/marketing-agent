@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { LoadingScreen } from './LoadingScreen'
 import { z } from 'zod'
@@ -15,9 +15,14 @@ const successResponseSchema = z.object({
 export const AnalysisTrigger = ({ domain }: { domain: string }) => {
   const router = useRouter()
   const hasStarted = useRef(false)
+  
+  // Stan: Czy backend skończył pracę? (To uwolni pasek z 80% do 100%)
+  const [isDone, setIsDone] = useState(false)
+  
+  // Stan: Gdzie mamy przekierować po zakończeniu animacji?
+  const [targetUrl, setTargetUrl] = useState<string | null>(null)
 
   useEffect(() => {
-    // Zabezpieczenie przed wielokrotnym wywołaniem (React Strict Mode w dev)
     if (hasStarted.current) return
     hasStarted.current = true
 
@@ -31,6 +36,7 @@ export const AnalysisTrigger = ({ domain }: { domain: string }) => {
           body: JSON.stringify({ domain }),
         })
 
+        // BŁĄD: Przekierowujemy natychmiast (nie czekamy na animację 100%, bo to błąd)
         if (!res.ok) {
           const raw = await res.json().catch(() => ({}))
           const parsed = errorResponseSchema.safeParse(raw)
@@ -42,15 +48,19 @@ export const AnalysisTrigger = ({ domain }: { domain: string }) => {
           return
         }
 
+        // SUKCES:
         const raw = await res.json().catch(() => ({}))
         const parsed = successResponseSchema.safeParse(raw)
-        // Przekieruj na dashboard z czystą domeną z serwera
+        
         if (parsed.success && parsed.data.domain) {
-          router.push(`/dashboard/${parsed.data.domain}`)
+          // 1. Zapisujemy cel podróży
+          setTargetUrl(`/dashboard/${parsed.data.domain}`)
+          // 2. Dajemy sygnał LoadingScreenowi: "Dobij do 100%!"
+          setIsDone(true)
         } else {
-          // Fallback - odśwież obecną stronę
           router.refresh()
         }
+
       } catch (error) {
         console.error('Błąd komunikacji z serwerem:', error)
         const message =
@@ -64,5 +74,17 @@ export const AnalysisTrigger = ({ domain }: { domain: string }) => {
     startAnalysis()
   }, [domain, router])
 
-  return <LoadingScreen onFinished={() => {}} />
+  // Callback: Wykona się dopiero, gdy pasek wizualnie dojdzie do 100%
+  const handleAnimationComplete = () => {
+    if (targetUrl) {
+      router.push(targetUrl)
+    }
+  }
+
+  return (
+    <LoadingScreen 
+      isFinished={isDone} 
+      onAnimationComplete={handleAnimationComplete} 
+    />
+  )
 }

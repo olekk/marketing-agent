@@ -32,7 +32,7 @@ app.post('/api/project/analyze', async (req: Request, res: Response) => {
       })
     }
 
-    console.log(`📨 Otrzymano zapytanie o analizę: ${domain}`)
+    console.log(`\n📨 Otrzymano zapytanie o analizę: ${domain}`)
 
     // Uruchom orkiestratora
     const result = await runOrchestrator(domain)
@@ -65,7 +65,7 @@ app.post('/api/project/analyze', async (req: Request, res: Response) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`🚀 Serwer nasłuchuje na porcie ${PORT}`)
-  console.log(`📍 Health check: http://localhost:${PORT}/health`)
-  console.log(`📍 API endpoint: http://localhost:${PORT}/api/project/analyze`)
+  console.log(`\n🚀 Serwer nasłuchuje na porcie ${PORT}`)
+  console.log(`\n📍 Health check: http://localhost:${PORT}/health`)
+  console.log(`\n📍 API endpoint: http://localhost:${PORT}/api/project/analyze`)
 })

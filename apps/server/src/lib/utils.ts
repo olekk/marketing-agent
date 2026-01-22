@@ -36,3 +36,16 @@ export async function resolveProtocol(domain: string): Promise<string> {
     return `http://${clean}`
   }
 }
+
+// Funkcja czyszcząca Markdown pod AI (oszczędność tokenów)
+export function cleanMarkdownForAI(markdown: string): string {
+  return markdown
+    .replace(/!\[.*?\]\(.*?\)/g, '') // Usuwa obrazki ![alt](url)
+    .replace(/\[.*?\]\(.*?\)/g, (match) => {
+      // Opcjonalnie: Możemy usuwać linki, ale czasem są przydatne.
+      // Na razie zostawmy sam tekst linku, usuwając URL, żeby AI skupiło się na treści.
+      return match // Zostawiamy linki, bo mogą prowadzić do podstron oferty
+    })
+    .replace(/\n\s*\n/g, '\n') // Usuwa puste linie
+    .substring(0, 35000) // TWARDY LIMIT: 35k znaków (ok. 6-8k tokenów). Bezpiecznie dla gpt-4o-mini.
+}

@@ -25,7 +25,7 @@ async function generateAudit() {
   const rawData = fs.readFileSync(INPUT_FILE, 'utf-8')
   const pages = JSON.parse(rawData)
 
-  console.log(`📊 Wczytano ${pages.length} podstron. Przygotowuję kontekst...`)
+  console.log(`\n📊 Wczytano ${pages.length} podstron. Przygotowuję kontekst...`)
 
   // 2. Przygotowujemy "wsad" dla AI
   // Łączymy treści z podstron w jeden ciąg, ale ucinamy zbyt długie teksty, żeby nie spalić milionów tokenów
@@ -87,7 +87,7 @@ async function generateAudit() {
 
     if (reportContent) {
       fs.writeFileSync(OUTPUT_FILE, reportContent)
-      console.log(`✅ SUKCES! Raport zapisano w pliku: ${OUTPUT_FILE}`)
+      console.log(`\n✅ SUKCES! Raport zapisano w pliku: ${OUTPUT_FILE}`)
     } else {
       console.error('❌ AI nie zwróciło treści.')
     }

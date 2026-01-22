@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import fs from 'fs'
 import path from 'path'
 import { scrapeToMarkdown } from './tools/scraper'
-import { resolveProtocol, cleanDomain } from './lib/utils'
+import { resolveProtocol, cleanDomain, cleanMarkdownForAI } from './lib/utils'
 
 // Konfiguracja
 dotenv.config()
@@ -12,21 +12,6 @@ const prisma = new PrismaClient()
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 // const CONTEXT_FILE = path.join(__dirname, '../inputs/context.txt')
-
-// --- HELPERY ---
-
-// Funkcja czyszcząca Markdown pod AI (oszczędność tokenów)
-function cleanMarkdownForAI(markdown: string): string {
-  return markdown
-    .replace(/!\[.*?\]\(.*?\)/g, '') // Usuwa obrazki ![alt](url)
-    .replace(/\[.*?\]\(.*?\)/g, (match) => {
-      // Opcjonalnie: Możemy usuwać linki, ale czasem są przydatne.
-      // Na razie zostawmy sam tekst linku, usuwając URL, żeby AI skupiło się na treści.
-      return match // Zostawiamy linki, bo mogą prowadzić do podstron oferty
-    })
-    .replace(/\n\s*\n/g, '\n') // Usuwa puste linie
-    .substring(0, 35000) // TWARDY LIMIT: 35k znaków (ok. 6-8k tokenów). Bezpiecznie dla gpt-4o-mini.
-}
 
 // Główny Prompt Systemowy (Definiuje strukturę JSON)
 const MASTER_PROMPT = `
@@ -75,13 +60,13 @@ Oczekiwana struktura JSON:
 
 export async function runOrchestrator(clientUrl: string) {
   console.log('🚀 SYSTEM START: Orchestrator v2 (Prisma + AI)')
-  console.log(`📍 URL klienta: ${clientUrl}`)
+  console.log(`\n📍 URL klienta: ${clientUrl}`)
 
   // 0. Przygotuj domenę i URL
   const domain = cleanDomain(clientUrl) // Czysta domena do zapisu w bazie
   const normalizedUrl = await resolveProtocol(clientUrl) // Pełny URL do scrapowania
-  console.log(`🔗 Domena (baza): ${domain}`)
-  console.log(`🔗 URL (scraping): ${normalizedUrl}`)
+  console.log(`\n🔗 Domena (baza): ${domain}`)
+  console.log(`\n🔗 URL (scraping): ${normalizedUrl}`)
 
   // 1. Pobierz lub utwórz projekt w bazie
   let project = await prisma.project.findUnique({
@@ -93,7 +78,19 @@ export async function runOrchestrator(clientUrl: string) {
   // 2. Jeśli nie ma treści w bazie -> SCRAPING
   if (!project || !project.rawContent) {
     console.log('🕷️ Brak danych w bazie. Uruchamiam Scrapera...')
-    rawContent = await scrapeToMarkdown(normalizedUrl)
+    try {
+      rawContent = await scrapeToMarkdown(normalizedUrl);
+    } catch (error) {
+      console.error("⚠️ Błąd krytyczny scrapera:", error);
+      // TU JEST ZMIANA: Rzucamy błąd dalej, żeby zatrzymać proces!
+      throw new Error("Nie udało się pobrać treści strony. Strona może być zablokowana lub niedostępna.");
+    }
+    
+    // 2. BEZPIECZNIK (Guard Clause)
+    if (!rawContent || rawContent.length < 100) {
+      console.error("⚠️ Pobrana treść jest zbyt krótka lub pusta.");
+      throw new Error("Strona zwróciła pustą treść. Analiza niemożliwa.");
+    }
 
     // Pobierz kontekst usera (jeśli istnieje)
     let userContext = ''

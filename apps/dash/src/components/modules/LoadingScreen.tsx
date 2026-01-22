@@ -70,7 +70,7 @@ export function LoadingScreen({ onFinished }: LoadingScreenProps) {
         </div>
 
         {/* Teksty */}
-        <div className="space-y-4 min-h-[5rem]">
+        <div className="space-y-4 min-h-20">
           <h2 className="text-xl font-mono text-violet-200">
             <span className="animate-pulse"> {LOADING_MESSAGES[messageIndex]}</span>
           </h2>
@@ -84,7 +84,7 @@ export function LoadingScreen({ onFinished }: LoadingScreenProps) {
         {/* Pasek Postępu */}
         <div className="w-full bg-gray-800/50 border border-white/10 rounded-full h-1 overflow-hidden">
           <div
-            className="bg-gradient-to-r from-violet-600 to-fuchsia-600 h-full transition-all duration-300 ease-out shadow-[0_0_10px_#8b5cf6]"
+            className="bg-linear-to-r from-violet-600 to-fuchsia-600 h-full transition-all duration-300 ease-out shadow-[0_0_10px_#8b5cf6]"
             style={{ width: `${progress}%` }}
           ></div>
         </div>

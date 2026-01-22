@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
 
 interface DashboardHeaderProps {
   domain: string
@@ -11,9 +12,9 @@ export const DashboardHeader = ({ domain, reportId, createdAt }: DashboardHeader
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#030014]/80 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center font-bold text-lg shadow-[0_0_15px_rgba(124,58,237,0.5)]">
+          <Link href="/" className="w-10 h-10 rounded-lg bg-linear-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center font-bold text-lg shadow-[0_0_15px_rgba(124,58,237,0.5)]">
             AI
-          </div>
+          </Link>
           <div>
             <h1 className="text-lg font-bold tracking-wide text-white leading-none">{domain}</h1>
             <p className="text-xs text-gray-500 font-mono mt-1">

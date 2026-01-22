@@ -2,6 +2,15 @@
 import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { LoadingScreen } from './LoadingScreen'
+import { z } from 'zod'
+
+const errorResponseSchema = z.object({
+  message: z.string().optional(),
+})
+
+const successResponseSchema = z.object({
+  domain: z.string().optional(),
+})
 
 export const AnalysisTrigger = ({ domain }: { domain: string }) => {
   const router = useRouter()
@@ -22,18 +31,33 @@ export const AnalysisTrigger = ({ domain }: { domain: string }) => {
           body: JSON.stringify({ domain }),
         })
 
-        if (res.ok) {
-          const data = await res.json()
-          // Przekieruj na dashboard z czystą domeną z serwera
-          if (data.domain) {
-            router.push(`/dashboard/${data.domain}`)
-          } else {
-            // Fallback - odśwież obecną stronę
-            router.refresh()
-          }
+        if (!res.ok) {
+          const raw = await res.json().catch(() => ({}))
+          const parsed = errorResponseSchema.safeParse(raw)
+          const message =
+            parsed.success && parsed.data.message
+              ? parsed.data.message
+              : `Błąd serwera (${res.status})`
+          router.push(`/?error=${encodeURIComponent(message)}`)
+          return
+        }
+
+        const raw = await res.json().catch(() => ({}))
+        const parsed = successResponseSchema.safeParse(raw)
+        // Przekieruj na dashboard z czystą domeną z serwera
+        if (parsed.success && parsed.data.domain) {
+          router.push(`/dashboard/${parsed.data.domain}`)
+        } else {
+          // Fallback - odśwież obecną stronę
+          router.refresh()
         }
       } catch (error) {
         console.error('Błąd komunikacji z serwerem:', error)
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Nie udało się połączyć z serwerem'
+        router.push(`/?error=${encodeURIComponent(message)}`)
       }
     }
 

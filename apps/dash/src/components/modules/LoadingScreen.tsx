@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 
 const LOADING_MESSAGES = [
-  'Inicjalizacja łącza neuronowego...',
   'Skanowanie struktury domeny...',
   'Analiza widoczności w Google (SERP)...',
   'Wykrywanie luk w strategii konkurencji...',

@@ -21,6 +21,8 @@ COPY apps/server/prisma apps/server/prisma
 # Musimy wejść do katalogu serwera, żeby prisma znalazła schema.prisma
 RUN cd apps/server && npx prisma generate
 
+COPY apps/server/tsconfig.json apps/server/tsconfig.json
+
 # 7. Kopiujemy kod źródłowy serwera
 COPY apps/server/src apps/server/src
 

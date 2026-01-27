@@ -8,7 +8,6 @@ import { LandingHero } from '@/components/modules/landing/landingHero'
 import { LandingSnackbar } from '@/components/modules/landing/landingSnackbar'
 import { toDomainId } from '@/lib/utils'
 
-// --- CZĘŚĆ 1: Komponent, który "patrzy" na URL (musi być w Suspense) ---
 function UrlErrorWatcher({ onErrorDetected }: { onErrorDetected: (msg: string) => void }) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -17,15 +16,13 @@ function UrlErrorWatcher({ onErrorDetected }: { onErrorDetected: (msg: string) =
     const errorMsg = searchParams.get('error')
     if (errorMsg) {
       onErrorDetected(errorMsg)
-      // Wyczyść URL (Replace)
       router.replace('/', { scroll: false })
     }
   }, [searchParams, router, onErrorDetected])
 
-  return null // Ten komponent nic nie wyświetla, tylko działa w tle
+  return null
 }
 
-// --- CZĘŚĆ 2: Główna strona ---
 export default function LandingPage() {
   const router = useRouter()
   const [url, setUrl] = useState('')
@@ -49,8 +46,6 @@ export default function LandingPage() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-[#030014] text-white relative overflow-hidden selection:bg-violet-500/30">
-      
-      {/* Tu jest kluczowa zmiana: Wrapujemy logiczny komponent w Suspense */}
       <Suspense fallback={null}>
         <UrlErrorWatcher onErrorDetected={handleShowError} />
       </Suspense>
@@ -61,7 +56,6 @@ export default function LandingPage() {
         onClose={handleCloseSnackbar}
       />
 
-      {/* Tła i ozdoby */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-700/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
